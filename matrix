@@ -16,9 +16,8 @@ function dims() {
 	words=$(wc -w < $1) # Counts the number of words in the file with the matrix
 	columns=$((words / rows)) # Divide the number of words by the number of rows to get columns
 
-	echo
-	echo Rows and columns:
 	echo $rows $columns
+	return 0
 }
 
 # MAIN PROG:
@@ -27,7 +26,6 @@ function dims() {
 datafilepath="datafile$$" # Generate a random file
 if [ "$#" = "1" ] # If the number of arguments is equal to one then read input into the random file
 then
-	echo Please enter your matrix: 
 	cat > "$datafilepath"
 elif [ "$#" = "2" ] # If number of args is two then assign the file to the random file
 then
