@@ -1,78 +1,43 @@
-#!/bin/bash
-
-function generate(){
-  # NAME
-  #   generate - generate a matrix of a specified size
-  # SYNOPSIS
-  #   generate ROWS COLS RANGE
-  # DESCRIPTION
-  #   Outputs a matrix with ROWS and COLS as dimensions. If RANGE is an integer, the entries
-  #   of the matrix will be random integers in (-RANGE,+RANGE). If RANGE is a string starting
-  #   with 'Z' or 'z', the matrix will be populated with zeroes. If RANGE is a string starting
-  #   with 'O' or 'o', the matrix will be populated with ones. If RANGE is a string starting
-  #   with 'D' or 'd', the matrix will be a diagonal matrix with ones along the diagonal entries.
-  # AUTHOR
-  #   Written by Ryan Gambord (gambordr@oregonstate.edu)
-
-  [ $# -ne 3 ] && echo "invalid number of arguments" >&2      # This is equivalent to using an if statement.
-                                                              # The right side of the && operator will not
-                                                              # be evaluated unless the left side is true.
-  for arg in $1 $2
-  do
-    [[ $arg =~ [^0-9]+ ]] && echo "argument '$arg' is not an integer" >&2
-  done
-
-  y=0
-  while [ $y -lt $1 ]
-  do
-    x=0
-    ((y++))
-    while [ $x -lt $2 ]
-    do
-      ((x++))
-      case $3 in
-        [oO]*) echo -n 1;;
-        [zZ]*) echo -n 0;;
-        [dD]*) [ $x -eq $y ] && echo -n 1 || echo -n 0;;
-        *) if [[ "$3" =~ [^0-9]+ ]]
-             then
-               echo "invalid RANGE" >&2
-               exit 1
-             else
-               echo -n $(( (RANDOM - 32767 / 2) % $3 ))
-             fi;;
-      esac
-      if [ $x -ne $2 ]
-      then
-        echo -ne "\t"
-      else
-        echo
-      fi
-    done
-  done
-}
-
-generate $1 $2 $3 > temp.txt
+#!/bin/bash -e
 
 function dims() {
 	# NAME	
-	# 	dims - give the dimensions (rows and columns) of a given matrix
+	# 	dims - Give the dimensions (rows and columns) of a given matrix
 	# SYNOPSIS
-	# 	todo
+	# 	Generates rows and columns of a given matrix in a file
 	# DESCRIPTION
-	# 	todo
+	# 	
 	# AUTHOR
 	# 	Written by Jett Seale (sealee@oregonstate.edu)
 
-	echo  Your matrix:
-	cat temp.txt
+	rows=$(wc -l < $1) # Counts the number of lines in the file with the matrix, which if formatted correctly will correspond to the number of rows - 1
+	((++rows)) # Account for off by one error
+		
+	words=$(wc -w < $1) # Counts the number of words in the file with the matrix
+	columns=$((words / rows)) # Divide the number of words by the number of rows to get columns
 
-	rows=$(wc -l < temp.txt) # Counts the number of lines in the file with the matrix, which if formatted correctly will correspond to the number of rows
-	echo Rows: $rows
-	
-	columns=$(wc -w < temp.txt) # Counts the number of words in the file with the matrix
-	columns=$((columns / rows)) # Divide the number of words by the number of rows to get columns
-	echo Columns: $columns
-#THERE IS ANOTHER FORMULA ON CANVAS, MIGHT WANT TO USE THAT ONE INSTEAD??
+	echo
+	echo Rows and columns:
+	echo $rows $columns
 }
-dims $1 $2 $3
+
+# MAIN PROG:
+
+# Passes info into a randomly generated file:
+datafilepath="datafile$$" # Generate a random file
+if [ "$#" = "1" ] # If the number of arguments is equal to one then read input into the random file
+then
+	echo Please enter your matrix: 
+	cat > "$datafilepath"
+elif [ "$#" = "2" ] # If number of args is two then assign the file to the random file
+then
+	datafilepath=$2
+else
+	echo You did not pass the correct number of parameters # If number of args is not 1 or 2, exit with error
+fi
+
+# Routes to different functions based on first arg value:
+if [ "$1" = "dims" ] #If first arg is dims, call dims function
+then
+	dims $datafilepath
+fi
