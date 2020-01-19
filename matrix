@@ -14,14 +14,33 @@ function dims() {
 	# AUTHOR
 	# 	TODO
 
-	ROWS=$(wc -l < $1) # Counts the number of lines in the file with the matrix, which if formatted correctly will correspond to the number of rows - 1
-	((++ROWS)) # Account for off by one error
+	ROWS=$(wc -l < $1) # Counts the number of lines in the file with the matrix, which if formatted correctly will correspond to the number of rows
 		
 	words=$(wc -w < $1) # Counts the number of words in the file with the matrix
 	COLS=$((words / ROWS)) # Divide the number of words by the number of rows to get columns
 
 	echo $ROWS $COLS
-	#rm -f $1 # Delete temporary file
+	rm -f $1 # Delete temporary file
+	return 0
+}
+
+function transpose() {
+	
+	echo >> transposed
+
+	rows=$(wc -l < $1)
+	words=$(wc -w < $1)
+	cols=$(words / rows)
+
+	for ((i=1; i <= $cols; i++))
+	do cut -f $i  $1 | tr $'\n' $'\t' | sed -e "s/\t$/\n/g" >> transposed
+	done
+	
+	cat transposed
+
+	rm -f "$1"
+	rm -f transposed
+
 	return 0
 }
 
@@ -42,4 +61,17 @@ then
 		errorReturn
 	fi
 	dims $datafilepath
+elif [ "$1" = "transpose" ]
+then
+	datafilepath="datafile$$"
+	if [ "$#" = "1" ]
+	then
+		cat > "$datafilepath"
+	elif [ "$#" = "2" ]
+	then
+		datafilepath=$2
+	else 
+		>&2 echo You did not pass the correct number of arguments
+		errorReturn
+	fi
 fi
