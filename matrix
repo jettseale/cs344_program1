@@ -25,22 +25,17 @@ function dims() {
 }
 
 function transpose() {
-	
-	echo >> transposed
 
-	rows=$(wc -l < $1)
-	words=$(wc -w < $1)
-	cols=$(words / rows)
-
-	for ((i=1; i <= $cols; i++))
-	do cut -f $i  $1 | tr $'\n' $'\t' | sed -e "s/\t$/\n/g" >> transposed
+	while read -a row; do
+    		for ((i=0; i < "${#row[@]}"; i++)); do
+        		a[$i]="${a[$i]} ${row[$i]}"
+    		done
+	done < $1
+	for ((i=0; i < ${#a[@]}; i++)); do
+    		echo ${a[i]}
 	done
-	
-	cat transposed
-
-	rm -f "$1"
-	rm -f transposed
-
+			
+	rm -f $1
 	return 0
 }
 
@@ -74,4 +69,5 @@ then
 		>&2 echo You did not pass the correct number of arguments
 		errorReturn
 	fi
+	transpose $datafilepath
 fi
