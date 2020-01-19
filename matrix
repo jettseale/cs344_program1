@@ -1,41 +1,45 @@
 #!/bin/bash -e
 
+function errorReturn() {
+	return 1
+}
+
 function dims() {
 	# NAME	
 	# 	dims - Give the dimensions (rows and columns) of a given matrix
 	# SYNOPSIS
 	# 	Generates rows and columns of a given matrix in a file
 	# DESCRIPTION
-	# 	
+	# 	TODO
 	# AUTHOR
-	# 	Written by Jett Seale (sealee@oregonstate.edu)
+	# 	TODO
 
-	rows=$(wc -l < $1) # Counts the number of lines in the file with the matrix, which if formatted correctly will correspond to the number of rows - 1
-	((++rows)) # Account for off by one error
+	ROWS=$(wc -l < $1) # Counts the number of lines in the file with the matrix, which if formatted correctly will correspond to the number of rows - 1
+	((++ROWS)) # Account for off by one error
 		
 	words=$(wc -w < $1) # Counts the number of words in the file with the matrix
-	columns=$((words / rows)) # Divide the number of words by the number of rows to get columns
+	COLS=$((words / ROWS)) # Divide the number of words by the number of rows to get columns
 
-	echo $rows $columns
+	echo $ROWS $COLS
+	#rm -f $1 # Delete temporary file
 	return 0
 }
 
 # MAIN PROG:
 
-# Passes info into a randomly generated file:
-datafilepath="datafile$$" # Generate a random file
-if [ "$#" = "1" ] # If the number of arguments is equal to one then read input into the random file
-then
-	cat > "$datafilepath"
-elif [ "$#" = "2" ] # If number of args is two then assign the file to the random file
-then
-	datafilepath=$2
-else
-	echo You did not pass the correct number of parameters # If number of args is not 1 or 2, exit with error
-fi
-
 # Routes to different functions based on first arg value:
 if [ "$1" = "dims" ] #If first arg is dims, call dims function
 then
+	datafilepath="datafile$$" # Generate a random file
+	if [ "$#" = "1" ] # If the number of args is equal to one then read input from stdin into the random file
+	then
+		cat > "$datafilepath"
+	elif [ "$#" = "2" ] # If number of args is two then assign the passed file to the random file
+	then
+		datafilepath=$2
+	else
+		>&2 echo You did not pass the correct number of arguments
+		errorReturn
+	fi
 	dims $datafilepath
 fi
