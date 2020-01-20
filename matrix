@@ -27,22 +27,15 @@ function dims() {
 function transpose() {
 
 	tempfile="tempfile$$"
-	line=""
 	rows=$(wc -l < $1)
 	words=$(wc -w < $1)
 	cols=$((words / rows))
 
 	for ((i=1; i<=cols; i++)); do
-		val=$(cut -f $i $1)
-		echo "$val" > "$tempfile"
-		paste -s $tempfile
-		val=`cat $tempfile`
-		line="$line$val\n"
+		echo "$(cut -f $i $1)" > "$tempfile"
+		echo "$(paste -s "$tempfile")" > "$tempfile"
+		cat "$tempfile"
 	done
-	
-	line=${line: : -2}
-
-	echo -e $line
 
 	rm -f $1 $tempfile # Delete the temp files
 	return 0
