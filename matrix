@@ -26,16 +26,20 @@ function dims() {
 
 function transpose() {
 
-	while read -a row; do
-    		for ((i=0; i < "${#row[@]}"; i++)); do
-        		a[$i]="${a[$i]} ${row[$i]}"
-    		done
-	done < $1
-	for ((i=0; i < ${#a[@]}; i++)); do
-    		echo ${a[i]}
+	line=""
+	rows=$(wc -l < $1)
+	words=$(wc -w < $1)
+	cols=$((words / rows))
+
+	for ((i=1; i<=cols; i++)); do
+		val=$(cut -f $i $1)
+		val=$(echo "$val" | tr $'\n' $'\t')
+		line="$line$val\n"
 	done
-			
-	rm -f $1
+	
+	echo -e $line
+
+	rm -f $1 # Delete the temp files
 	return 0
 }
 
