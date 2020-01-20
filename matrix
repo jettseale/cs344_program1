@@ -54,7 +54,13 @@ then
 		cat > "$datafilepath"
 	elif [ "$#" = "2" ] # If number of args is two then assign the passed file to the random file
 	then
-		datafilepath=$2
+		if [[ -r $2 ]]
+		then
+			datafilepath=$2
+		else 
+			>&2 echo The file you gave is not readable
+			errorReturn
+		fi
 	else
 		>&2 echo You did not pass the correct number of arguments
 		errorReturn
@@ -68,10 +74,78 @@ then
 		cat > "$datafilepath"
 	elif [ "$#" = "2" ]
 	then
-		datafilepath=$2
+		if [[ -r $2 ]]
+		then
+			datafilepath=$2
+		else
+			>&2 echo The file you gave is not readable
+			errorReturn
+		fi
+
 	else 
 		>&2 echo You did not pass the correct number of arguments
 		errorReturn
 	fi
 	transpose $datafilepath
+elif [ "$1" = "mean" ]
+then
+	datafilepath="datafile$$"
+	if [ "$#" = "1" ]
+	then
+		cat > "$datafilepath"
+	elif [ "$#" = "2" ]
+	then
+		if [[ -r $2 ]]
+		then
+			datafilepath=$2
+		else
+			>&2 echo The file you gave is not readable
+			errorReturn
+		fi
+	else 
+		>&2 echo You did not pass the correct number of arguments
+		errorReturn
+	fi
+	# mean $datafilepath
+elif [ "$1" = "add" ]
+then
+	datafilepath1="datafile$$"
+	datafilepath2="datafile$$"
+	if [ "$#" = "3" ]
+	then
+		if [[ -r $2 && -r $3 ]]
+		then
+			datafilepath1=$2
+			datafilepath2=$3
+		else
+			>&2 echo The file you gave is not readable
+			errorReturn
+		fi
+	else
+		>&2 echo You did not pass the correct number of arguments
+		errorReturn
+	fi
+	# add $datafilepath1 $datafilepath2
+elif [ "$1" = "multiply" ]
+then
+	datafilepath1="datafile$$"
+	datafilepath2="datafile$$"
+	if [ "$#" = "3" ]
+	then
+		if [[ -r $2 && -r $3 ]]
+		then
+			datafilepath1=$2
+			datafilepath2=$3
+		else
+			>&2 echo The file you gave is not readable
+			errorReturn
+		fi
+	else
+		>&2 echo You did not pass the correct number of arguments
+		errorReturn
+	fi
+	# multiply $datafilepath1 $datafilepath2
+else 
+	>&2 echo Command not recognized
+	errorReturn	
 fi
