@@ -12,7 +12,7 @@ function dims() {
 	# DESCRIPTION
 	# 	TODO
 	# AUTHOR
-	# 	TODO
+	# 	Written by Jett Seale (sealee@oregonstate.edu)
 
 	ROWS=$(wc -l < $1) # Counts the number of lines in the file with the matrix, which if formatted correctly will correspond to the number of rows
 		
@@ -25,21 +25,41 @@ function dims() {
 }
 
 function transpose() {
+	# NAME	
+	# 	transpose - Give the dimensions (rows and columns) of a given matrix
+	# SYNOPSIS
+	# 	Generates rows and columns of a given matrix in a file
+	# DESCRIPTION
+	# 	TODO
+	# AUTHOR
+	# 	Written by Jett Seale (sealee@oregonstate.edu)
 
-	tempfile="tempfile$$"
-	rows=$(wc -l < $1)
-	words=$(wc -w < $1)
-	cols=$((words / rows))
+	tempfile="tempfile$$" # Generate a temp file
+	finalfile="finalfile$$" # Output file
 
-	for ((i=1; i<=cols; i++)); do
-		echo "$(cut -f $i $1)" > "$tempfile"
-		echo "$(paste -s "$tempfile")" > "$tempfile"
-		cat "$tempfile"
+	rows=$(wc -l < "$1")
+	words=$(wc -w < "$1")
+	cols=$((words / rows)) # Get the number of columns to find out how many times to loop
+
+	for ((i=1; i<=cols; i++)); do # For each column in the matrix
+		echo "$(cut -f $i $1)" > "$tempfile" # Cut the ith column and store it in a temp file
+		echo "$(paste -s "$tempfile")" >> "$finalfile" # Paste the column in the temp file (inserts a tab after each element and a newline at the end) and append to finalfile
 	done
 
-	rm -f $1 $tempfile # Delete the temp files
+	cat "$finalfile" # Print the final output
+
+	rm -f "$1" "$tempfile" "$finalfile" # Delete the temp files
 	return 0
 }
+
+#function mean() {
+
+	#tempfile="tempfile$$"	
+#}
+
+#function add() {}
+
+#function multiply() {}
 
 # MAIN PROG:
 
@@ -104,7 +124,7 @@ then
 		>&2 echo You did not pass the correct number of arguments
 		errorReturn
 	fi
-	# mean $datafilepath
+	mean $datafilepath
 elif [ "$1" = "add" ]
 then
 	datafilepath1="datafile$$"
@@ -123,7 +143,7 @@ then
 		>&2 echo You did not pass the correct number of arguments
 		errorReturn
 	fi
-	# add $datafilepath1 $datafilepath2
+	#add $datafilepath1 $datafilepath2
 elif [ "$1" = "multiply" ]
 then
 	datafilepath1="datafile$$"
@@ -142,7 +162,7 @@ then
 		>&2 echo You did not pass the correct number of arguments
 		errorReturn
 	fi
-	# multiply $datafilepath1 $datafilepath2
+	#multiply $datafilepath1 $datafilepath2
 else 
 	>&2 echo Command not recognized
 	errorReturn	
