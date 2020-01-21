@@ -20,7 +20,7 @@ function dims() {
 	COLS=$((words / ROWS)) # Divide the number of words by the number of rows to get columns
 
 	echo $ROWS $COLS
-	rm -f $1 # Delete temporary file
+
 	return 0
 }
 
@@ -48,7 +48,7 @@ function transpose() {
 
 	cat "$finalfile" # Print the final output
 
-	rm -f "$1" "$tempfile" "$finalfile" # Delete the temp files
+	rm -f "$tempfile" "$finalfile" # Delete the temp files
 	return 0
 }
 
@@ -76,12 +76,12 @@ function mean() {
 
 	cat "$secondtempfile" | tr '\n' '\t' > "$finalfile"
 	
-	
+	truncate -s-1 "$finalfile"	
 
 	cat "$finalfile"
 
 
-	rm -f "$1" "$tempfile" "$secondtempfile" "$finalfile"
+	rm -f "$tempfile" "$secondtempfile" "$finalfile"
 	return 0	
 }
 
@@ -112,6 +112,7 @@ then
 		errorReturn
 	fi
 	dims $datafilepath
+	rm -f $datafilepath # TODO
 elif [ "$1" = "transpose" ]
 then
 	datafilepath="datafile$$"
