@@ -125,6 +125,7 @@ function add() {
 		echo -e "$addedrow" # Print the final result
 
 		rm -f "$tempfilem1" "$tempfilem2" # Delete the temp files
+		return 0
 	else # If rows and columns don't match, then return error
 		>&2 echo The rows and/or columns of your two matrices are not compatible to add
 		errorReturn
@@ -134,7 +135,49 @@ function add() {
 function multiply() {
 	# Header TODO
 	
+	m1rows=$(wc -l < "$1")
+	m1words=$(wc -w < "$1")
+	m1cols=$((m1words / m1rows))
+	
+	m2rows=$(wc -l < "$2")
+	m2words=$(wc -w < "$2")
+	m2cols=$((m2words / m2rows))
+	
+	if [ "$m1cols" = "$m2rows" ]
+	then
+		tempfilem1="tempfilem1$$"
+		tempfilem2="tempfilem2$$"
+		multrow=""
+		for ((i=1; i<=m1rows; i++)); do
+			echo "$(cat "$1" | head -"$i" | tail -1)" > "$tempfilem1" # Grab m1's row
+			for ((j=1; j<=m2cols; j++)); do
+				echo "$(cut -f "$j" "$2")" > "$tempfilem2" # Grab m2's column
+				sum=0
+				for ((k=1; k<=m1cols; k++)); do	
+					tempnumm1="$(cut -f "$k" "$tempfilem1")" # Grab m1's subrow's column
+					tempnumm2="$(cat "$tempfilem2" | head -"$k" | tail -1)" # Grab m2's subcolumn's row
+					multnum=$((tempnumm1 * tempnumm2))
+					sum=$((sum + multnum))
+				done
+				if [ "$j" = "$m2cols" ]
+				then
+					multrow="$multrow$sum\n"
+				else
+					multrow="$multrow$sum\t"
+				fi
+			done
+		done
 		
+		multrow=${multrow%?}
+		multrow=${multrow%?}
+
+		echo -e "$multrow"
+		rm -f "$tempfilem1" "$tempfilem2"
+		return 0
+	else
+		>&2 echo The rows and/or columns of your two matrices are not compatible to multiply
+		errorReturn
+	fi		
 }
 
 # MAIN PROG:
