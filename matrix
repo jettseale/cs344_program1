@@ -92,46 +92,50 @@ function add() {
 
 	m1rows=$(wc -l < "$1")
 	m1words=$(wc -w < "$1")
-	m1cols=$((m1words / m1rows))
+	m1cols=$((m1words / m1rows)) # Get the number of rows and cols for matrix 1
 
 	m2rows=$(wc -l < "$2")
 	m2words=$(wc -w < "$2")
-	m2cols=$((m2words / m2rows))
+	m2cols=$((m2words / m2rows)) # Get the number of rows and cols for matrix 2
 
-	if [[ "$m1rows" = "$m2rows" && "$m1cols" = "$m2cols" ]]
-	then
+	if [[ "$m1rows" = "$m2rows" && "$m1cols" = "$m2cols" ]] # Check to see if matrix 1 and 2 have the same amount of rows and cols
+	then # If so, continue with function
 		tempfilem1="tempfilem1$$"
-		tempfilem2="tempfilem2$$"
-		addedrow=""
-		for ((i=1; i<=m1rows; i++)); do 
+		tempfilem2="tempfilem2$$" # Create temp files for both matrices
+		addedrow="" # Empty string that will hold the final result
+		for ((i=1; i<=m1rows; i++)); do # For each row
 			echo "$(cat "$1" | head -"$i" | tail -1)" > "$tempfilem1"
-			echo "$(cat "$2" | head -"$i" | tail -1)" > "$tempfilem2"
-			subcols=$(wc -w < "$tempfilem1")
-			for ((j=1; j<=subcols; j++)); do
+			echo "$(cat "$2" | head -"$i" | tail -1)" > "$tempfilem2" # Grab the ith line from each matrix file
+			subcols=$(wc -w < "$tempfilem1") # Find the number of columns in the ith row
+			for ((j=1; j<=subcols; j++)); do # For each sub column
 				tempnumm1="$(cut -f $j $tempfilem1)"
-				tempnumm2="$(cut -f $j $tempfilem2)"
-				addednum=$((tempnumm1 + tempnumm2))
-				if [ "$j" = "$subcols" ]
+				tempnumm2="$(cut -f $j $tempfilem2)" # Grab the number in each matrix file
+				addednum=$((tempnumm1 + tempnumm2)) # Add them both together
+				if [ "$j" = "$subcols" ] # Check to see if it's the last iteration
 				then
-					addedrow="$addedrow$addednum\n"
+					addedrow="$addedrow$addednum\n" # If it's the last iteration, append the added number with a newline at the end
 				else
-					addedrow="$addedrow$addednum\t"
+					addedrow="$addedrow$addednum\t" # If it's not the last iteration, append the added number with a tab at the end
 				fi
 			done
 		done
 
 		addedrow=${addedrow%?}
-		addedrow=${addedrow%?}
-		echo -e "$addedrow"
+		addedrow=${addedrow%?} # Get rid of the trailing newline
+		echo -e "$addedrow" # Print the final result
 
-		rm -f "$tempfilem1" "$tempfilem2"
-	else
+		rm -f "$tempfilem1" "$tempfilem2" # Delete the temp files
+	else # If rows and columns don't match, then return error
 		>&2 echo The rows and/or columns of your two matrices are not compatible to add
 		errorReturn
 	fi			
 }
 
-#function multiply() {}
+function multiply() {
+	# Header TODO
+	
+		
+}
 
 # MAIN PROG:
 
@@ -156,7 +160,6 @@ then
 		errorReturn
 	fi
 	dims $datafilepath
-	#rm -f $datafilepath # TODO
 elif [ "$1" = "transpose" ]
 then
 	datafilepath="datafile$$"
@@ -235,7 +238,7 @@ then
 		>&2 echo You did not pass the correct number of arguments
 		errorReturn
 	fi
-	#multiply $datafilepath1 $datafilepath2
+	multiply $datafilepath1 $datafilepath2
 else 
 	>&2 echo Command not recognized
 	errorReturn	
