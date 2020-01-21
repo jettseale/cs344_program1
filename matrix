@@ -53,6 +53,7 @@ function transpose() {
 }
 
 function mean() {
+	# Header TODO
 
 	tempfile="tempfile$$" # Generate temp file
 	secondtempfile="secondtempfile$$" # Second temp file
@@ -64,28 +65,71 @@ function mean() {
 	
 	for ((i=1; i<=cols; i++)); do # For each col in matrix
 		echo "$(cut -f $i $1)" > "$tempfile" # Cut the ith col and store in temp file
-		subrows=$(wc -l < "$tempfile") # Get the number of rows in the ith column temp file to know 
+		subrows=$(wc -l < "$tempfile") # Get the number of rows in the ith column temp file to use for inner loop
 		finalnum=0 
-		for ((j=1; j<=subrows; j++)); do
-			tempnum=$(cat "$tempfile" | head -"$j" | tail -1)
-			finalnum=$((finalnum + tempnum))	
+		for ((j=1; j<=subrows; j++)); do # For each row in the ith col
+			tempnum=$(cat "$tempfile" | head -"$j" | tail -1) # Get the element from the jth row and assign it to tempnum
+			finalnum=$((finalnum + tempnum)) # Add the temp number to the total number
 		done
-		finalnum=$((finalnum / subrows))
-		echo "$finalnum" >> "$secondtempfile"
+		finalnum=$((finalnum / subrows)) # Divide all the added up column numbers by the total number of rows in that column
+		echo "$finalnum" >> "$secondtempfile" # Save the average number
 	done
 
-	cat "$secondtempfile" | tr '\n' '\t' > "$finalfile"
+	cat "$secondtempfile" | tr '\n' '\t' > "$finalfile" # Turn the column result into a row
 	
-	truncate -s-1 "$finalfile"	
+	truncate -s-1 "$finalfile" # Get rid of the trailing tab char
 
-	cat "$finalfile"
+	echo -e "" >> "$finalfile" # Add a newline char at the end of the file
 
+	cat "$finalfile" # Print the final output
 
-	rm -f "$tempfile" "$secondtempfile" "$finalfile"
+	rm -f "$tempfile" "$secondtempfile" "$finalfile" # Delete temp files
 	return 0	
 }
 
-#function add() {}
+function add() {
+	# Header TODO
+
+	m1rows=$(wc -l < "$1")
+	m1words=$(wc -w < "$1")
+	m1cols=$((m1words / m1rows))
+
+	m2rows=$(wc -l < "$2")
+	m2words=$(wc -w < "$2")
+	m2cols=$((m2words / m2rows))
+
+	if [[ "$m1rows" = "$m2rows" && "$m1cols" = "$m2cols" ]]
+	then
+		tempfilem1="tempfilem1$$"
+		tempfilem2="tempfilem2$$"
+		addedrow=""
+		for ((i=1; i<=m1rows; i++)); do 
+			echo "$(cat "$1" | head -"$i" | tail -1)" > "$tempfilem1"
+			echo "$(cat "$2" | head -"$i" | tail -1)" > "$tempfilem2"
+			subcols=$(wc -w < "$tempfilem1")
+			for ((j=1; j<=subcols; j++)); do
+				tempnumm1="$(cut -f $j $tempfilem1)"
+				tempnumm2="$(cut -f $j $tempfilem2)"
+				addednum=$((tempnumm1 + tempnumm2))
+				if [ "$j" = "$subcols" ]
+				then
+					addedrow="$addedrow$addednum\n"
+				else
+					addedrow="$addedrow$addednum\t"
+				fi
+			done
+		done
+
+		addedrow=${addedrow%?}
+		addedrow=${addedrow%?}
+		echo -e "$addedrow"
+
+		rm -f "$tempfilem1" "$tempfilem2"
+	else
+		>&2 echo The rows and/or columns of your two matrices are not compatible to add
+		errorReturn
+	fi			
+}
 
 #function multiply() {}
 
@@ -112,7 +156,7 @@ then
 		errorReturn
 	fi
 	dims $datafilepath
-	rm -f $datafilepath # TODO
+	#rm -f $datafilepath # TODO
 elif [ "$1" = "transpose" ]
 then
 	datafilepath="datafile$$"
@@ -172,7 +216,7 @@ then
 		>&2 echo You did not pass the correct number of arguments
 		errorReturn
 	fi
-	#add $datafilepath1 $datafilepath2
+	add $datafilepath1 $datafilepath2
 elif [ "$1" = "multiply" ]
 then
 	datafilepath1="datafile$$"
