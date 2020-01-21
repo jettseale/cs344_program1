@@ -52,10 +52,38 @@ function transpose() {
 	return 0
 }
 
-#function mean() {
+function mean() {
 
-	#tempfile="tempfile$$"	
-#}
+	tempfile="tempfile$$" # Generate temp file
+	secondtempfile="secondtempfile$$" # Second temp file
+	finalfile="finalfile$$" # Output file
+
+	rows=$(wc -l < "$1")
+	words=$(wc -w < "$1")
+	cols=$((words / rows)) # Get number of cols to set as the number of times to loop
+	
+	for ((i=1; i<=cols; i++)); do # For each col in matrix
+		echo "$(cut -f $i $1)" > "$tempfile" # Cut the ith col and store in temp file
+		subrows=$(wc -l < "$tempfile") # Get the number of rows in the ith column temp file to know 
+		finalnum=0 
+		for ((j=1; j<=subrows; j++)); do
+			tempnum=$(cat "$tempfile" | head -"$j" | tail -1)
+			finalnum=$((finalnum + tempnum))	
+		done
+		finalnum=$((finalnum / subrows))
+		echo "$finalnum" >> "$secondtempfile"
+	done
+
+	cat "$secondtempfile" | tr '\n' '\t' > "$finalfile"
+	
+	
+
+	cat "$finalfile"
+
+
+	rm -f "$1" "$tempfile" "$secondtempfile" "$finalfile"
+	return 0	
+}
 
 #function add() {}
 
