@@ -71,8 +71,13 @@ function mean() {
 			tempnum=$(cat "$tempfile" | head -"$j" | tail -1) # Get the element from the jth row and assign it to tempnum
 			finalnum=$((finalnum + tempnum)) # Add the temp number to the total number
 		done
-		finalnum=$((finalnum / subrows)) # Divide all the added up column numbers by the total number of rows in that column
-		echo "$finalnum" >> "$secondtempfile" # Save the average number
+		#finalnum=$((finalnum / subrows)) # Divide all the added up column numbers by the total number of rows in that column
+
+		#finalnum=$(((finalnum / subrows) + (finalnum % subrows > 0)))
+
+		result=$(( ($finalnum + ($subrows/2)*( ($finalnum>0)*2-1 )) / $subrows ))
+
+		echo "$result" >> "$secondtempfile" # Save the average number
 	done
 
 	cat "$secondtempfile" | tr '\n' '\t' > "$finalfile" # Turn the column result into a row
