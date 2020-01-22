@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-function errorReturn() {
+function errorReturn() { # Returns a non-zero number when an error occurs
 	return 1
 }
 
@@ -10,7 +10,8 @@ function dims() {
 	# SYNOPSIS
 	# 	Generates rows and columns of a given matrix in a file
 	# DESCRIPTION
-	# 	TODO
+	# 	Outputs the rows and columns of a given matrix by reading the number of lines to determine
+	#       rows and the number of words divided by the number of rows to determine columns.
 	# AUTHOR
 	# 	Written by Jett Seale (sealee@oregonstate.edu)
 
@@ -19,7 +20,7 @@ function dims() {
 	words=$(wc -w < $1) # Counts the number of words in the file with the matrix
 	COLS=$((words / ROWS)) # Divide the number of words by the number of rows to get columns
 
-	echo $ROWS $COLS
+	echo $ROWS $COLS # Print results
 
 	return 0
 }
@@ -28,9 +29,9 @@ function transpose() {
 	# NAME	
 	# 	transpose - Give the dimensions (rows and columns) of a given matrix
 	# SYNOPSIS
-	# 	Generates rows and columns of a given matrix in a file
+	# 	Generates the transpose of a matrix in a file
 	# DESCRIPTION
-	# 	TODO
+	# 	Outputs the transpose of a given matrix by pasting each column of the original matrix into a new file.
 	# AUTHOR
 	# 	Written by Jett Seale (sealee@oregonstate.edu)
 
@@ -53,7 +54,15 @@ function transpose() {
 }
 
 function mean() {
-	# Header TODO
+	# NAME
+	#	mean - Give the column means of a given matrix in the form of a 1xN vector
+	# SYNOPSIS
+	#	Generates a matrix vector of the mean of each column in a given matrix in a file
+	# DESCRIPTION
+	#	Outputs the mean of a given matrix by adding the ith column and jth row to a final number for each column
+	#	and dividing that by the number of subrows in said column. Adds that number to a 1xN vector for output.
+	# AUTHOR
+	#	Written by Jett Seale (sealee@oregonstate.edu)
 
 	tempfile="tempfile$$" # Generate temp file
 	secondtempfile="secondtempfile$$" # Second temp file
@@ -71,11 +80,8 @@ function mean() {
 			tempnum=$(cat "$tempfile" | head -"$j" | tail -1) # Get the element from the jth row and assign it to tempnum
 			finalnum=$((finalnum + tempnum)) # Add the temp number to the total number
 		done
-		#finalnum=$((finalnum / subrows)) # Divide all the added up column numbers by the total number of rows in that column
 
-		#finalnum=$(((finalnum / subrows) + (finalnum % subrows > 0)))
-
-		result=$(( ($finalnum + ($subrows/2)*( ($finalnum>0)*2-1 )) / $subrows ))
+		result=$(( ($finalnum + ($subrows/2)*( ($finalnum>0)*2-1 )) / $subrows )) # Divide the total added number by the number of subrows (with correct rounding) 
 
 		echo "$result" >> "$secondtempfile" # Save the average number
 	done
@@ -93,7 +99,16 @@ function mean() {
 }
 
 function add() {
-	# Header TODO
+	# NAME
+	#	add - Gives the sum of two inputted matrices
+	# SYNPOSIS
+	#	Generates a valid matrix that is the sum of two matrices in two respective files
+	# DESCRIPTION 
+	#	Outputs the sum of two valid matrices by adding each element of m1 to each respective element of m2. This is
+	#	done by locating the ith row and jth column of each matrix and adding those numbers together for every row in
+	#	m1. These numbers are then entered into a correctly formatted matrix which is printed to the screen.
+	# AUTHOR
+	#	Written by Jett Seale (sealee@oregonstate.edu)
 
 	m1rows=$(wc -l < "$1")
 	m1words=$(wc -w < "$1")
@@ -138,48 +153,57 @@ function add() {
 }
 
 function multiply() {
-	# Header TODO
+	# NAME
+	#	multiply - Gives the product of two given matrices
+	# SYNOPSIS
+	#	Generates a valid matrix that is the product of two matrices in two respective files
+	# DESCRIPTION
+	#	Outputs a valid product matrix of two matrices by looping through each row element in m1 and each column
+	#	element in m2 and multiplying them together. Then add that number to a total sum and append that sum
+	#	to the final vector string.
+	# AUTHOR
+	#	Written by Jett Seale (sealee@oregonstate.edu)
 	
 	m1rows=$(wc -l < "$1")
 	m1words=$(wc -w < "$1")
-	m1cols=$((m1words / m1rows))
+	m1cols=$((m1words / m1rows)) # Get the number of columns and rows in the first matrix to be later used in for loops and if statements
 	
 	m2rows=$(wc -l < "$2")
 	m2words=$(wc -w < "$2")
-	m2cols=$((m2words / m2rows))
+	m2cols=$((m2words / m2rows)) # Get the number of cols and rows for the second matrix
 	
-	if [ "$m1cols" = "$m2rows" ]
-	then
+	if [ "$m1cols" = "$m2rows" ] # Check to see if the number of m1 columns is equal to the number of m2 rows
+	then # If so, continue on with the function
 		tempfilem1="tempfilem1$$"
-		tempfilem2="tempfilem2$$"
-		multrow=""
-		for ((i=1; i<=m1rows; i++)); do
+		tempfilem2="tempfilem2$$" # Make temp files to hold m1's rows and m2's columns
+		multrow="" # String to hold our final vector
+		for ((i=1; i<=m1rows; i++)); do # For each row in m1
 			echo "$(cat "$1" | head -"$i" | tail -1)" > "$tempfilem1" # Grab m1's row
-			for ((j=1; j<=m2cols; j++)); do
+			for ((j=1; j<=m2cols; j++)); do # For each column in m2
 				echo "$(cut -f "$j" "$2")" > "$tempfilem2" # Grab m2's column
-				sum=0
-				for ((k=1; k<=m1cols; k++)); do	
+				sum=0 # Set sum variable equal to 0
+				for ((k=1; k<=m1cols; k++)); do	# For each column in m1
 					tempnumm1="$(cut -f "$k" "$tempfilem1")" # Grab m1's subrow's column
 					tempnumm2="$(cat "$tempfilem2" | head -"$k" | tail -1)" # Grab m2's subcolumn's row
-					multnum=$((tempnumm1 * tempnumm2))
-					sum=$((sum + multnum))
+					multnum=$((tempnumm1 * tempnumm2)) # Multiply the two numbers together
+					sum=$((sum + multnum)) # Add the product of m1's number of m2's number to the final sum
 				done
-				if [ "$j" = "$m2cols" ]
-				then
-					multrow="$multrow$sum\n"
+				if [ "$j" = "$m2cols" ] # Check to see if it's the last iteration through m2's columns
+				then 
+					multrow="$multrow$sum\n" # If it's the last iteration, append a newline for formatting
 				else
-					multrow="$multrow$sum\t"
+					multrow="$multrow$sum\t" # If it's not the last iteration, append a tab for formatting
 				fi
 			done
 		done
 		
 		multrow=${multrow%?}
-		multrow=${multrow%?}
+		multrow=${multrow%?} # Delete the trailing newline
 
-		echo -e "$multrow"
-		rm -f "$tempfilem1" "$tempfilem2"
+		echo -e "$multrow" #Output the final vector
+		rm -f "$tempfilem1" "$tempfilem2" # Remove temp files
 		return 0
-	else
+	else # If m1 cols != m2 rows, return with an error
 		>&2 echo The rows and/or columns of your two matrices are not compatible to multiply
 		errorReturn
 	fi		
@@ -196,98 +220,98 @@ then
 		cat > "$datafilepath"
 	elif [ "$#" = "2" ] # If number of args is two then assign the passed file to the random file
 	then
-		if [[ -r $2 ]]
+		if [[ -r $2 ]] # If the file passed is readable
 		then
-			datafilepath=$2
+			datafilepath=$2 # Assign the random file the passed in file
 		else 
-			>&2 echo The file you gave is not readable
+			>&2 echo The file you gave is not readable # Return an error if the file is not readable
 			errorReturn
 		fi
 	else
-		>&2 echo You did not pass the correct number of arguments
+		>&2 echo You did not pass the correct number of arguments # Return an error if the incorrect number of arguments were passed
 		errorReturn
 	fi
-	dims $datafilepath
-elif [ "$1" = "transpose" ]
+	dims $datafilepath # Run dims function with input in a file as first argument
+elif [ "$1" = "transpose" ] # If first arg is transpose, call transpose function
 then
-	datafilepath="datafile$$"
-	if [ "$#" = "1" ]
+	datafilepath="datafile$$" # Generate temp file
+	if [ "$#" = "1" ] # If number of args is 1 then read input from command line into temp file
 	then
 		cat > "$datafilepath"
-	elif [ "$#" = "2" ]
+	elif [ "$#" = "2" ] # If number of args is 2 then assign the passed file to the temp file
 	then
-		if [[ -r $2 ]]
+		if [[ -r $2 ]] # If the file passed is readable
 		then
-			datafilepath=$2
+			datafilepath=$2 # Assign temp file the passed file
 		else
-			>&2 echo The file you gave is not readable
+			>&2 echo The file you gave is not readable # Return error if not readable
 			errorReturn
 		fi
 
 	else 
-		>&2 echo You did not pass the correct number of arguments
+		>&2 echo You did not pass the correct number of arguments # Return error if incorrect number of args were passed
 		errorReturn
 	fi
-	transpose $datafilepath
-elif [ "$1" = "mean" ]
+	transpose $datafilepath # Run transpose function with input in a file as first argument
+elif [ "$1" = "mean" ] # If the first arg is mean, call mean function
 then
-	datafilepath="datafile$$"
-	if [ "$#" = "1" ]
+	datafilepath="datafile$$" # Generate temp file
+	if [ "$#" = "1" ] # If number of args is 1 then read input from command line into temp file
 	then
-		cat > "$datafilepath"
-	elif [ "$#" = "2" ]
+		cat > "$datafilepath" 
+	elif [ "$#" = "2" ] # If number of args is 2 then assign the passed file to the temp file
 	then
-		if [[ -r $2 ]]
+		if [[ -r $2 ]] # If the file passed is readable
 		then
-			datafilepath=$2
+			datafilepath=$2 # Assign temp file to passed file
 		else
-			>&2 echo The file you gave is not readable
+			>&2 echo The file you gave is not readable # Return error if not readable
 			errorReturn
 		fi
 	else 
+		>&2 echo You did not pass the correct number of arguments # Return error if incorrect number of args were passed
+		errorReturn
+	fi
+	mean $datafilepath # Run mean function with input in a file as first argument
+elif [ "$1" = "add" ] # If first arg is add, call add function
+then
+	datafilepath1="datafile$$"
+	datafilepath2="datafile$$" # Generate temp files for 2 matrices
+	if [ "$#" = "3" ] # If number of args is 3 then continue with program
+	then
+		if [[ -r $2 && -r $3 ]] # Check to see if the files are readable
+		then
+			datafilepath1=$2
+			datafilepath2=$3 # If both files are readable, assign each one to the random files
+		else
+			>&2 echo The file you gave is not readable # Return error if either file is not readable
+			errorReturn
+		fi
+	else # If number of args isn't 3 then return error
 		>&2 echo You did not pass the correct number of arguments
 		errorReturn
 	fi
-	mean $datafilepath
-elif [ "$1" = "add" ]
+	add $datafilepath1 $datafilepath2 # Run add function with 2 files as 2 arguments
+elif [ "$1" = "multiply" ] # If first arg is multiply, run multiply function
 then
 	datafilepath1="datafile$$"
-	datafilepath2="datafile$$"
-	if [ "$#" = "3" ]
+	datafilepath2="datafile$$" # Generate temp files for 2 matrices
+	if [ "$#" = "3" ] # If number of args is 3 then continue with program
 	then
-		if [[ -r $2 && -r $3 ]]
+		if [[ -r $2 && -r $3 ]] # Check that both files are readable
 		then
 			datafilepath1=$2
-			datafilepath2=$3
+			datafilepath2=$3 # If both are readable, assign them to temp files
 		else
-			>&2 echo The file you gave is not readable
+			>&2 echo The file you gave is not readable # If either file is not readable, return error
 			errorReturn
 		fi
 	else
-		>&2 echo You did not pass the correct number of arguments
+		>&2 echo You did not pass the correct number of arguments # If number of args is not 3 then return error
 		errorReturn
 	fi
-	add $datafilepath1 $datafilepath2
-elif [ "$1" = "multiply" ]
-then
-	datafilepath1="datafile$$"
-	datafilepath2="datafile$$"
-	if [ "$#" = "3" ]
-	then
-		if [[ -r $2 && -r $3 ]]
-		then
-			datafilepath1=$2
-			datafilepath2=$3
-		else
-			>&2 echo The file you gave is not readable
-			errorReturn
-		fi
-	else
-		>&2 echo You did not pass the correct number of arguments
-		errorReturn
-	fi
-	multiply $datafilepath1 $datafilepath2
+	multiply $datafilepath1 $datafilepath2 # Run multiply function with 2 files as 2 arguments
 else 
-	>&2 echo Command not recognized
+	>&2 echo Command not recognized # If first argument not recognized, return error
 	errorReturn	
 fi
